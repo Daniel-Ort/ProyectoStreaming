@@ -15,7 +15,6 @@ const handler = NextAuth({
         }
 
         try {
-          // Utiliza la URL interna del backend enviada desde las variables de entorno
           const res = await fetch(`${process.env.BACKEND_INTERNAL_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
