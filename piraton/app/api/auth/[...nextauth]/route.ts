@@ -1,4 +1,3 @@
-// @ts-nocheck
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
@@ -46,4 +45,6 @@ const handler = NextAuth({
   },
 });
 
-export { handler as GET, handler as POST };
+const authHandler = handler as any;
+
+export { authHandler as GET, authHandler as POST };
