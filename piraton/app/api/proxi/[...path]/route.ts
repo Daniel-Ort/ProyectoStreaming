@@ -8,9 +8,9 @@ async function handleProxy(
 ) {
   const resolvedParams = await params;
   
-  // Omitimos el primer segmento si es 'proxy' o unimos directamente los parámetros
-  const pathArray = resolvedParams.path;
-  const targetPath = pathArray.join('/');
+  // Limpiamos la ruta para asegurar que no se repita la palabra 'proxy'
+  const filteredPath = resolvedParams.path.filter(p => p !== 'proxy');
+  const targetPath = filteredPath.join('/');
   const searchParams = req.nextUrl.search;
 
   const targetUrl = `${BACKEND_INTERNAL_URL}/${targetPath}${searchParams}`;
