@@ -7,7 +7,10 @@ async function handleProxy(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const resolvedParams = await params;
-  const targetPath = resolvedParams.path.join('/');
+  
+  // Omitimos el primer segmento si es 'proxy' o unimos directamente los parámetros
+  const pathArray = resolvedParams.path;
+  const targetPath = pathArray.join('/');
   const searchParams = req.nextUrl.search;
 
   const targetUrl = `${BACKEND_INTERNAL_URL}/${targetPath}${searchParams}`;
