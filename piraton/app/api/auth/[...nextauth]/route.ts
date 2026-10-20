@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Dirección interna de Docker donde responde NestJS
-const BACKEND_INTERNAL_URL =
-  process.env.BACKEND_INTERNAL_URL ;
+const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL;
 
-async function handleProxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
-  const { path } = await params;
-  const targetPath = path.join('/');
+async function handleProxy(
+  req: NextRequest, 
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  const resolvedParams = await params;
+  const targetPath = resolvedParams.path.join('/');
   const searchParams = req.nextUrl.search;
 
   const targetUrl = `${BACKEND_INTERNAL_URL}/${targetPath}${searchParams}`;
 
   const headers = new Headers(req.headers);
-  // Eliminamos el host para que el backend no rechace la petición
   headers.delete('host');
 
   try {
