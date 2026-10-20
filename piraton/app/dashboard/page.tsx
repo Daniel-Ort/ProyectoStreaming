@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
