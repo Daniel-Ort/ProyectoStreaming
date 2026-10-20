@@ -1,50 +1,49 @@
-import { NextRequest, NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
-const BACKEND_INTERNAL_URL = process.env.BACKEND_INTERNAL_URL;
+const handler = NextAuth({
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
 
-async function handleProxy(
-  req: NextRequest, 
-  { params }: { params: Promise<{ path: string[] }> }
-) {
-  const resolvedParams = await params;
-  const targetPath = resolvedParams.path.join('/');
-  const searchParams = req.nextUrl.search;
+        try {
+          // Utiliza la URL interna del backend enviada desde las variables de entorno
+          const res = await fetch(`${process.env.BACKEND_INTERNAL_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
-  const targetUrl = `${BACKEND_INTERNAL_URL}/${targetPath}${searchParams}`;
+          const user = await res.json();
 
-  const headers = new Headers(req.headers);
-  headers.delete('host');
+          if (res.ok && user) {
+            return user;
+          }
+          return null;
+        } catch (error) {
+          console.error('Error durante la autenticación:', error);
+          return null;
+        }
+      },
+    }),
+  ],
+  pages: {
+    signIn: '/login',
+  },
+  session: {
+    strategy: 'jwt',
+  },
+});
 
-  try {
-    const body = ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer();
-
-    const response = await fetch(targetUrl, {
-      method: req.method,
-      headers,
-      body,
-      // @ts-ignore
-      duplex: 'half',
-    });
-
-    const data = await response.arrayBuffer();
-    const responseHeaders = new Headers(response.headers);
-
-    return new NextResponse(data, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders,
-    });
-  } catch (error) {
-    console.error('Error enviando petición al backend interno:', error);
-    return NextResponse.json(
-      { error: 'Error de comunicación con el backend interno' },
-      { status: 502 }
-    );
-  }
-}
-
-export const GET = handleProxy;
-export const POST = handleProxy;
-export const PUT = handleProxy;
-export const PATCH = handleProxy;
-export const DELETE = handleProxy;
+export { handler as GET, handler as POST };
