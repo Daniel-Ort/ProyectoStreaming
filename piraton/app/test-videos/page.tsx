@@ -4,17 +4,13 @@ import { Suspense } from 'react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function VideoList() {
-  let videos = [];
-  try {
-    const res = await fetch(`${API_URL}/videos`, {
-      cache: 'no-store',
-    });
-    if (res.ok) {
-      videos = await res.json();
-    }
-  } catch (error) {
-    console.error("Error al conectar con NestJS:", error);
-  }
+ let videos = [];
+try {
+  const res = await fetch(`${API_URL}/videos`, { cache: 'no-store' });
+  if (res.ok) videos = await res.json();
+} catch (error) {
+  console.error("No se pudo conectar al backend durante el build");
+}
 
   return (
     <div className="space-y-4">
